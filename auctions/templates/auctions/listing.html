@@ -1,0 +1,94 @@
+{% extends "auctions/layout.html" %}
+{% load crispy_forms_tags %}
+
+{% block body %}
+    <h2 style="margin: 25px;">Listing: {{ listing.title }}</h2>
+
+    <div class="container">
+    	{% if request.user.is_authenticated and not owner %}
+	    	<div style="margin-bottom: 25px;">
+			    {% if listing.active and not is_watching %}
+				    <form action="" method="post">
+				    	{% csrf_token %}
+				    	<input type="submit" name="watchlist-add" value="Add to Watchlist" class="btn btn-success">
+				    </form>
+			    {% else %}
+			    	<form action="" method="post">
+			    		{% csrf_token %}
+				    	<input type="submit" name="watchlist-remove" value="Remove from Watchlist" class="btn btn-danger">
+				    </form>
+			    {% endif %}
+		    </div>
+		{% endif %}
+
+	    <div class="listing-image">
+	      {% if listing.image_url %}
+	      	<img src="{{ listing.image_url }}">
+	      {% else %}
+	      	<h2 style="text-align: center;">No Image Available</h2>
+	      {% endif %}
+	    </div>
+	    <div class="info-description">{{ listing.description }}</div>
+	   	<div class="info-price">$ {{ listing.price|floatformat:2 }}</div>
+	   	{% if request.user.is_authenticated %}
+		   	<div class="info-row">
+		   		{{ bid_number }} bid(s) so far. {% if last_bid_by %}Your bid is the current bid.{% endif %}
+		   	</div>
+		{% endif %}
+	   	{% if error %}
+	   		<div class="alert alert-danger" role="alert">
+	   			{{ error }}
+			</div>
+	   	{% endif %}
+	   	{% if request.user.is_authenticated and not owner and listing.active %}
+		   	<form action="" method="post" class="price-form">
+		   		{% csrf_token %}
+		   		{{ form|crispy }}
+		   		<div>
+		   			<input type="submit" class="btn btn-primary" value="Submit bid">
+		   		</div>
+		   	</form>
+		{% elif owner and listing.active %}
+			<form action="" method="post">
+				{% csrf_token %}
+				<div>
+					<input type="submit" name="close" value="Close listing" class="btn btn-danger">
+				</div>
+			</form>
+		{% elif won_bid %}
+			<div class="alert alert-success" role="alert">
+				Congratulations, you won the bidding!
+			</div>
+	   	{% endif %}
+	   	<hr>
+	   	<h3 style="margin-top: 15px;">Details</h3>
+	   	<ul>
+	   		<li>Listed by: <a href="{% url 'user_profile' listing.author.id %}">{{ listing.author.username }}</a></li>
+			{% if listing.category %}
+				<li><div class="info-row">Category: {{ listing.category }}</div></li>
+			{% endif %}
+			<li><div class="info-row">Created {{ listing.created }}</div></li>
+		</ul>
+		<hr>
+		{% if request.user.is_authenticated %}
+			<div>
+				<form action="" method="post">
+					{% csrf_token %}
+					<textarea name="comment" cols="50" rows="4" placeholder="Add a comment for this listing" class="form-control"></textarea>
+					<div class="info-row">
+						<input type="submit" class="btn btn-warning" value="Submit comment">
+					</div>
+				</form>
+			</div>
+		{% endif %}
+
+		<h3 style="margin-top: 15px;">Comments</h3>
+	   	{% for comment in comments %}
+	   		<div class="card">
+		   		<div>By: <a href="{% url 'user_profile' comment.user.id %}">{{ comment.user.username }}</a> on {{ comment.created }}</div>
+		   		<div class="comment-content">{{ comment.content }}</div>
+	   		</div>
+	   	{% endfor %}
+	 </div>
+    </div>
+{% endblock %}

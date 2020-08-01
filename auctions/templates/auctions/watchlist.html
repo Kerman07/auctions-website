@@ -1,0 +1,31 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2 style="margin: 20px;">Watching: </h2>
+
+    <div class="container">
+    	{% for listing in active %}
+	    	<div class="row grid-row">
+			    <div class="col grid-col">
+			      {% if listing.image_url %}
+			      	<a href="{% url 'listing' listing.id %}"><img src="{{ listing.image_url }}"></a>
+			      {% else %}
+			      	<h2 style="text-align: center;">No Image Available</h2>
+			      {% endif %}
+			    </div>
+			    <div class="col grid-col-info">
+			      <div class="info-title"><a href="{% url 'listing' listing.id %}">{{ listing.title }}</a></div>
+			      {% if listing.active %}
+			      	<div class="info-row"><strong>Price:</strong> {{ listing.price|floatformat:2 }} $</div>
+			      {% else %}
+			      	<div class="info-row"><strong>Bids closed</strong></div>
+			      {% endif %}
+			      <div class="info-row">{{ listing.description }}</div>
+			      <div class="info-row">Created {{ listing.created }}</div>
+			    </div>
+			 </div>
+		 {% empty %}
+		 	<h4>No Listings</h4>
+		 {% endfor %}
+    </div>
+{% endblock %}
